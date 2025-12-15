@@ -1,0 +1,43 @@
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family : Arial, Helvetica, sans-serif;
+}
+
+.header,footer{
+    background-color: darkslateblue;
+    color: #fff;
+    width: 100%;
+}
+
+.header{
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.header h2{
+    font-size: 30px;
+}
+
+.footer{
+    position: absolute;
+    bottom: 0;
+    text-align: center;
+    font-size: 22px;
+    padding: 30px 0;
+}
+
+.nav ul li{
+    list-style:none;
+    display: inline-block;
+}
+
+.nav ul li a{
+    text-decoration: none;
+    color: #fff;
+    font-size: 18px;
+    padding: 0 15px;
+    text-transform: capitalize;
+}
