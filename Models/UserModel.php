@@ -1,23 +1,18 @@
 <?php
 
 namespace App\Models;
+
 use CodeIgniter\Model;
 
-class UserModel extends Model{
-    protected $table      = 'staf';
-    protected $primaryKey = 'staffid';
+class UserModel extends Model {
+    protected $table = 'SPK_USERS';
+    protected $primaryKey = 'ID';
+    protected $useAutoIncrement = true;
+    protected $useTimestamps = false;
+    // protected $createdAtField  = 'CREATED_AT'; // Make sure this matches Oracle
+    // protected $updatedAtField = 'UPDATED_AT';
 
     protected $allowedFields = [
-        'nostaff', 'name', 'email', 'password', 'roles'
+        'NAME', 'EMAIL', 'GENDER', 'AGE', 'PROFILE_PIC', 'RESUME'
     ];
-
-    protected function getUserByUsernameAndPassword($email, $password) {
-        $user = $this->where('username', $email)->first();
-
-        if (!$user || !password_verify($password, $user['password'])) {
-            return null;
-        }
-
-        return $user;
-    }
 }

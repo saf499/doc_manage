@@ -41,5 +41,3 @@ class homeModel extends Model{
     // protected $beforeDelete   = [];
     // protected $afterDelete    = [];
 }
-
-?>

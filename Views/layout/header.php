@@ -18,7 +18,7 @@
                 <ul>
                     <li><a href="<?= site_url('projek') ?>">Projek</a></li>
                     <li><a href="<?= site_url('perolehan') ?>">Perolehan</a></li>
-                    <li><a href="">Kontrak</a></li>
+                    <li><a href="<?= site_url('kontrak') ?>">Kontrak</a></li>
                 </ul>
             </nav>
         </header>

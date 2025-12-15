@@ -36,9 +36,9 @@
             <!-- small box -->
             <div class="small-box bg-info">
               <div class="inner">
-                <h3>150</h3>
+                <h3>3</h3>
 
-                <p>New Orders</p>
+                <p>Senarai Projek</p>
               </div>
               <div class="icon">
                 <i class="ion ion-bag"></i>
@@ -51,9 +51,9 @@
             <!-- small box -->
             <div class="small-box bg-success">
               <div class="inner">
-                <h3>53<sup style="font-size: 20px">%</sup></h3>
+                <h3>23<sup style="font-size: 20px">%</sup></h3>
 
-                <p>Bounce Rate</p>
+                <p>Progres Kerja</p>
               </div>
               <div class="icon">
                 <i class="ion ion-stats-bars"></i>
@@ -66,9 +66,9 @@
             <!-- small box -->
             <div class="small-box bg-warning">
               <div class="inner">
-                <h3>44</h3>
+                <h3>43<sup style="font-size: 20px">%</sup></h3>
 
-                <p>User Registrations</p>
+                <p>Pembayaran</p>
               </div>
               <div class="icon">
                 <i class="ion ion-person-add"></i>
@@ -83,7 +83,7 @@
               <div class="inner">
                 <h3>65</h3>
 
-                <p>Unique Visitors</p>
+                <p>Senarai Kontraktor</p>
               </div>
               <div class="icon">
                 <i class="ion ion-pie-graph"></i>

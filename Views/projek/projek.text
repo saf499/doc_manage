@@ -1,0 +1,16 @@
+### Penjelasan Kod View archive:
+
+1.  **Struktur Bootstrap:** Kod ini menggunakan komponen Bootstrap seperti `container`, `card`, `table`, `alert`, dan `btn` untuk menghasilkan paparan yang kemas dan responsif.
+2.  **Mesej Flash**: Terdapat blok PHP di bahagian atas untuk memeriksa dan memaparkan mesej `success` atau `error` yang dihantar dari Controller menggunakan `session()->setFlashdata()`.
+3.  **Paparan Jadual**:
+    * Ia memeriksa jika pembolehubah `$SPK_PROJEK` wujud dan tidak kosong.
+    * Jika ada data, ia akan melalui setiap projek dalam gelung `foreach` dan memaparkan maklumat dalam baris jadual (`<tr>`).
+    * `esc()` digunakan untuk membersihkan data sebelum dipaparkan, sebagai langkah keselamatan asas untuk mengelakkan serangan XSS.
+4.  **Format Tarikh**: Saya menambah logik untuk memformat lajur `ARCHIVED_AT` kepada format yang lebih mudah dibaca (cth: `18 Jun 2025, 10:57 AM`).
+5.  **Butang "Nyaharkib"**:
+    * Diletakkan di dalam tag `<form>`. Ini adalah amalan terbaik kerana tindakan yang mengubah data (seperti unarchive) sepatutnya dihantar melalui kaedah `POST`, bukan `GET`.
+    * `csrf_field()` disertakan untuk perlindungan CSRF, satu ciri keselamatan penting dalam CodeIgniter 4.
+    * `onclick="return confirm(...)` akan memaparkan dialog pengesahan kepada pengguna sebelum borang dihantar.
+6.  **Tiada Data**: Jika tiada projek yang diarkibkan, satu baris mesej akan dipaparkan di tengah-tengah jadual.
+
+Anda hanya perlu salin dan tampal kod ini ke dalam fail `app/Views/projek/archived.php` anda.

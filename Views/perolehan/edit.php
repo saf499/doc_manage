@@ -10,15 +10,15 @@
         </div>
     <?php endif; ?>
 
-    <form action="<?= site_url('perolehan/update/' . $perolehan['perolehan_id']) ?>" method="post" enctype="multipart/form-data">
+    <form action="<?= site_url('perolehan/update/' . $perolehan['PEROLEHAN_ID']) ?>" method="post" enctype="multipart/form-data">
         <?= csrf_field() ?>
         <script src="<?= base_url('js/ifhasdoc.js') ?>"></script>
         
         <div class="form-group">
             <label for="projek_id">Nama Projek: </label>
-            <?php if (isset($projek['nama_projek'])): ?>
-                <input type="text" class="form-control" value="<?= $projek['nama_projek'] ?>" readonly>
-                <input type="hidden" name="projek_id" value="<?= $projek['projek_id'] ?>">
+            <?php if (isset($projek['NAMA_PROJEK'])): ?>
+                <input type="text" class="form-control" value="<?= $projek['NAMA_PROJEK'] ?>" readonly>
+                <input type="hidden" name="projek_id" value="<?= $projek['PROJEK_ID'] ?>">
             <?php else: ?>
                 <p class="text-danger">Projek not found</p>
             <?php endif; ?>
@@ -26,80 +26,93 @@
 
 
         <div class="form-group">
-            <label for="keputusan">Keputusan JKSU/LP</label>
-            <select name="keputusan" class="form-control" required>
-                <option value="lulus">Lulus</option>
-                <option value="lulus bersyarat">Lulus Bersyarat</option>
-                <option value="ditolak">Ditolak</option>
+            <label for="KEPUTUSAN">Keputusan JKSU/LP</label>
+            <select name="KEPUTUSAN" class="form-control" required>
+                <option value="lulus" <?= set_value('KEPUTUSAN', $perolehan['KEPUTUSAN']) == 'lulus' ? 'selected' : '' ?>>Lulus</option>
+                <option value="lulus bersyarat" <?= set_value('KEPUTUSAN', $perolehan['KEPUTUSAN']) == 'lulus bersyarat' ? 'selected' : '' ?>>Lulus Bersyarat</option>
+                <option value="ditolak" <?= set_value('KEPUTUSAN', $perolehan['KEPUTUSAN']) == 'ditolak' ? 'selected' : '' ?>>Ditolak</option>
             </select>
         </div>
 
         <div class="form-group">
-            <label for="jenis_perolehan">Jenis Perolehan</label>
-            <select name="jenis_perolehan" class="form-control" required>
-                <option value="sebutharga">Sebutharga</option>
-                <option value="tender">Perolehan Tender</option>
-                <option value="rfp">Request For Proposal</option>
+            <label for="JENIS_PEROLEHAN">Jenis Perolehan</label>
+            <select name="JENIS_PEROLEHAN" class="form-control" required>
+                <option value="sebutharga" <?= set_value('JENIS_PEROLEHAN', $perolehan['JENIS_PEROLEHAN']) == 'sebutharga' ? 'selected' : '' ?>>Sebutharga</option>
+                <option value="tender" <?= set_value('JENIS_PEROLEHAN', $perolehan['JENIS_PEROLEHAN']) == 'tender' ? 'selected' : '' ?>>Perolehan Tender</option>
+                <option value="rfp" <?= set_value('JENIS_PEROLEHAN', $perolehan['JENIS_PEROLEHAN']) == 'rfp' ? 'selected' : '' ?>>Request For Proposal</option>
             </select>
         </div>
 
         <div class="form-group">
-            <label for="jenis_projek">Jenis Projek</label>
-            <select name="jenis_projek" class="form-control" required>
-                <option value="one-off">One-off</option>
-                <option value="berkala">Berkala</option>
+            <label for="JENIS_PROJEK">Jenis Projek</label>
+            <select name="JENIS_PROJEK" class="form-control" required>
+                <option value="one-off" <?= set_value('JENIS_PROJEK', $perolehan['JENIS_PROJEK']) == 'one-off' ? 'selected' : '' ?>>One-off</option>
+                <option value="berkala" <?= set_value('JENIS_PROJEK', $perolehan['JENIS_PROJEK']) == 'berkala' ? 'selected' : '' ?>>Berkala</option>
             </select>
         </div>
 
         <div class="form-group" id="docCh">
-            <label for="lukisan_tender">Ada dokumen yang perlu disertakan?</label>
+            <label for="LUKISAN_TENDER">Ada dokumen yang perlu disertakan?</label>
             <div>
-                <input type="radio" name="lukisan_tender" value="1" id="yes" <?= set_value('lukisan_tender', $perolehan['lukisan_tender']) == 1 ? 'checked' : '' ?>>Yes
-                <input type="radio" name="lukisan_tender" value="0" id="no" <?= set_value('lukisan_tender', $perolehan['lukisan_tender']) == 0 ? 'checked' : '' ?>>No
+                <input type="radio" name="LUKISAN_TENDER" value="1" id="yes" <?= set_value('LUKISAN_TENDER', $perolehan['LUKISAN_TENDER']) == 1 ? 'checked' : '' ?>>Yes
+                <input type="radio" name="LUKISAN_TENDER" value="0" id="no" <?= set_value('LUKISAN_TENDER', $perolehan['LUKISAN_TENDER']) == 0 ? 'checked' : '' ?>>No
             </div>
         </div>
 
         <div class="form-group" id="document-upload" style="display: none;">
-            <label for="lukisan_tender_file">Upload File: </label>
-            <input type="file" name="lukisan_tender_file" class="form-control">
+            <label for="LUKISAN_TENDER_FILE">Upload File: </label>
+            <input type="file" name="LUKISAN_TENDER_FILE" class="form-control">
         </div>
 
         <h3>Lampiran Fail Hijau</h3>
 
         <div class="form-group">
-            <label for="ro_pindaan">R.O Pindaan 7: </label>
-            <input type="file" name="ro_pindaan" class="form-control">
+            <label for="exampleInputFile">File input</label>
+            <div class="input-group">
+                <div class="custom-file">
+                    <input type="file" class="custom-file-input" id="exampleInputFile">
+                    <label class="custom-file-label" for="exampleInputFile">Choose file</label>
+                </div>
+                <div class="input-group-append">
+                    <span class="input-group-text">Upload</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="RO_PINDAAN">R.O Pindaan 7: </label>
+            <input type="file" name="RO_PINDAAN" class="form-control">
         </div>
 
         <div>
-            <label for="kertas_kerja">Kertas Kerja: </label>
-            <input type="file" name="kertas_kerja" class="form-control">
+            <label for="KERTAS_KERJA">Kertas Kerja: </label>
+            <input type="file" name="KERTAS_KERJA" class="form-control">
         </div>
 
         <div>
-            <label for="borang_47a_47b">Borang 47a dan 47b: </label>
-            <input type="file" name="borang_47a_47b" class="form-control">
+            <label for="BORANG_47A_47B">Borang 47a dan 47b: </label>
+            <input type="file" name="BORANG_47A_47B" class="form-control">
         </div>
 
         <div>
-            <label for="tapak">Laporan Pemantauan Tapak: </label>
-            <input type="file" name="tapak" class="form-control">
+            <label for="TAPAK">Laporan Pemantauan Tapak: </label>
+            <input type="file" name="TAPAK" class="form-control">
         </div>
 
         <div>
-            <label for="pelan projek">Pelan Projek: </label>
-            <input type="file" name="pelan_projek" class="form-control">
+            <label for="PELAN PROJEK">Pelan Projek: </label>
+            <input type="file" name="PELAN_PROJEK" class="form-control">
         </div>
 
         <div>
-            <label for="kuantiti">Senarai Kuantiti: </label>
-            <input type="file" name="kuantiti" class="form-control">
+            <label for="KUANTITI">Senarai Kuantiti: </label>
+            <input type="file" name="KUANTITI" class="form-control">
         </div>
         
         <button type="submit" class="btn btn-primary">Update</button>
     </form>
 
-    <a href="<?= site_url('perolehan') ?>">Back to List</a>
+    <a href="<?= site_url('projek') ?>">Back to Projek</a>
 
 </body>
 

@@ -45,7 +45,7 @@
             <th>Dokumen Lukisan Tender</th>
             <td><?= $perolehan['lukisan_tender_file'] ?></td>
             <td>
-                <a href="<?= base_url('upload/perolehan/' . $perolehan['lukisan_tender_file']) ?>" target="_blank">View / Download</a>
+                <a href="<?= base_url('upload/perolehan/' . $perolehan['projek_id'] . '/' . $perolehan['lukisan_tender_file']) ?>" target="_blank">View / Download</a>
             </td>
         </tr>
         <?php endif; ?>
@@ -55,7 +55,7 @@
             <th>Dokumen Meja Tender</th>
             <td><?= $perolehan['dokumen_meja_tender'] ?></td>
             <td>
-                <a href="<?= base_url('upload/perolehan/' . $perolehan['dokumen_meja_tender']) ?>" target="_blank">View / Download</a>
+                <a href="<?= base_url('upload/perolehan/' . $perolehan['projek_id'] . '/' . $perolehan['dokumen_meja_tender']) ?>" target="_blank">View / Download</a>
             </td>
         </tr>
         <?php endif; ?>
@@ -65,7 +65,7 @@
             <th>R.O Pindaan 7</th>
             <td><?= $perolehan['ro_pindaan'] ?></td>
             <td>
-                <a href="<?= base_url('upload/perolehan' . $perolehan['ro_pindaan']) ?>" target="_blank">View / Download</a>
+                <a href="<?= base_url('upload/perolehan/' . $perolehan['projek_id'] . '/' . $perolehan['ro_pindaan']) ?>" target="_blank">View / Download</a>
             </td>
         </tr>
         <?php endif; ?>
@@ -75,7 +75,7 @@
             <th>Kertas Kerja</th>
             <td><?= $perolehan['kertas_kerja'] ?></td>
             <td>
-                <a href="<?= base_url('upload/perolehan' . $perolehan['kertas_kerja']) ?>" target="_blank">View / Download</a>
+                <a href="<?= base_url('upload/perolehan/' . $perolehan['projek_id'] . '/' . $perolehan['kertas_kerja']) ?>" target="_blank">View / Download</a>
             </td>
         </tr>
         <?php endif; ?>
@@ -85,7 +85,7 @@
             <th>Borang 47a dan 47b</th>
             <td><?= $perolehan['borang_47a_47b'] ?></td>
             <td>
-                <a href="<?= base_url('upload/perolehan' . $perolehan['borang_47a_47b']) ?>" target="_blank">View / Download</a>
+                <a href="<?= base_url('upload/perolehan/' . $perolehan['projek_id'] . '/' . $perolehan['borang_47a_47b']) ?>" target="_blank">View / Download</a>
             </td>
         </tr>
         <?php endif; ?>
@@ -95,7 +95,7 @@
             <th>Laporan Pemantauan Tapak</th>
             <td><?= $perolehan['tapak'] ?></td>
             <td>
-                <a href="<?= base_url('upload/perolehan' . $perolehan['tapak']) ?>" target="_blank">View / Download</a>
+                <a href="<?= base_url('upload/perolehan/' . $perolehan['projek_id'] . '/' . $perolehan['tapak']) ?>" target="_blank">View / Download</a>
             </td>
         </tr>
         <?php endif; ?>
@@ -105,7 +105,7 @@
             <th>Pelan Projek</th>
             <td><?= $perolehan['pelan_projek'] ?></td>
             <td>
-                <a href="<?= base_url('upload/perolehan' . $perolehan['pelan_projek']) ?>" target="_blank">View / Download</a>
+                <a href="<?= base_url('upload/perolehan/' . $perolehan['projek_id'] . '/' . $perolehan['pelan_projek']) ?>" target="_blank">View / Download</a>
             </td>
         </tr>
         <?php endif; ?>
@@ -115,7 +115,7 @@
             <th>Senarai Kuantiti</th>
             <td><?= $perolehan['kuantiti'] ?></td>
             <td>
-                <a href="<?= base_url('upload/perolehan' . $perolehan['kuantiti']) ?>" target="_blank">View / Download</a>
+                <a href="<?= base_url('upload/perolehan/' . $perolehan['projek_id'] . '/' . $perolehan['kuantiti']) ?>" target="_blank">View / Download</a>
             </td>
         </tr>
         <?php endif; ?>

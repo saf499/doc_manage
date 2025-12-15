@@ -6,28 +6,63 @@ use CodeIgniter\Model;
 use CodeIgniter\Database\ConnectionInterface;
 
 class ProjekModel extends Model{
-    protected $table = 'projek';
-    protected $primaryKey = 'projek_id';
-    protected $useAutoIncrement = true;
-    // protected $useTimestamps = true;
-    // protected $createdField = 'created_at';
-    // protected $deleltedField = 'deleted_at';
-    // protected $updatedField = 'updated_at';
+    protected $table = 'SPK_PROJEK';
+    protected $primaryKey = 'PROJEK_ID';
+    // protected $useAutoIncrement = true;
+    protected $useTimestamps = false;
+    // protected $createdField = 'REG_DATE'; // Use reg_date instead of created_at
+    // protected $deletedField = 'deleted_at';
+    // protected $updatedField = null; // No updated_at field
 
     protected $allowedFields = [
-        'nama_projek', 'nama_pemohon', 
-        'no_kontrak', 'jenis_kontrak', 'anggaran_kos', 'tahun', 
-        'sumber_peruntukan', 'status_projek'
+        'NAMA_PROJEK', 'NAMA_PEMOHON', 'NO_KONTRAK',
+        'JENIS_KONTRAK', 'ANGGARAN_KOS', 'TAHUN',
+        'SUMBER_PERUNTUKAN', 'STATUS_PROJEK',
+        'IS_ARCHIVED', 'ARCHIVED_AT' // Needed for achieve/unarchieve methods 
+        // REG_DATE n UPDATE_AT are handled by Oracle
     ];
 
-    public function getProjekById($projek_id){
-        
-        // Use the projek_id to find the specific record
-        return $this->where('projek_id', $projek_id)->first();
+    /**
+     * HANYA mengarkibkan rekod projek ini.
+     * Controller akan uruskan logik untuk perolehan.
+     */
+
+     public function getAllNonArchivedProjek(){
+        return $this->where('IS_ARCHIVED', 0)->findAll();
+     }
+    public function archiveProjek($PROJEK_ID)
+    {
+        $data = [
+            'IS_ARCHIVED' => 1,
+            'ARCHIVED_AT' => date('Y-m-d H:i:s'),
+        ];
+        return $this->update($PROJEK_ID, $data);
     }
 
-    
-    public function getPerolehan() {
-        return $this->hasOne('App\Models\PerolehanModel', 'projek_id', 'projek_id');
+    /**
+     * HANYA menyaharkibkan rekod projek ini.
+     */
+    public function unarchiveProjek($PROJEK_ID)
+    {
+        $data = [
+            'IS_ARCHIVED' => 0,
+            'ARCHIVED_AT' => null,
+        ];
+        return $this->update($PROJEK_ID, $data);
     }
+
+    public function getProjekById($PROJEK_ID)
+    {
+        return $this->where('PROJEK_ID', $PROJEK_ID)
+                    ->where('IS_ARCHIVED', 0)
+                    ->first();
+    }
+
+    public function getArchivedProjek()
+    {
+        return $this->where('IS_ARCHIVED', 1)->findAll();
+    }
+    
+    // ... fungsi-fungsi lain ...
+
 }

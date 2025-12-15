@@ -4,20 +4,35 @@ namespace App\Controllers;
 
 use App\Models\PerolehanModel;
 use App\Models\ProjekModel;
-use CodeIgniter\Controller;
 
-class PerolehanController extends Controller{
+class PerolehanController extends BaseController{
 
-    public function create(){
-        $projek_id = $this->request->getGet('projek_id');
+    public function create($PROJEK_ID){
+        if (!$PROJEK_ID) {
+            // Check if projek_id is passsed as query parameter (from ProjekControlller store redirect)
+            $PROJEK_ID = $this->request->getGet('PROJEK_ID');
+        }
 
-        if (!$projek_id) {
+        if (!$PROJEK_ID) {
             // Redirect back if no projek_id is found
-            return redirect()->to ('/projek')->with('error', 'Projek ID is missing');
+            return redirect()->to ('/projek')->with('error', 'ID Projek diperlukan untuk membuat perolehan.');
+        }
+
+        $projekM = new ProjekModel();
+        $projek = $projekM->getProjekById($PROJEK_ID); // Ensure projek exists n is not archived
+
+        if (!$projek || $projek['IS_ARCHIVED'] == 1) {
+            return redirect()->to('/projek')->with('error', 'Projek tidak ditemukan atau telah diarchive.');
+        }
+
+        $perolehanM = new PerolehanModel();
+        $existingPerolehan = $perolehanM->getPerolehanByProjekId($PROJEK_ID);
+        if ($existingPerolehan) {
+            return redirect()->to('/perolehan/edit/' . $existingPerolehan['PEROLEHAN_ID'])->with('info', 'Perolehan sudah ada untuk projek ini.');
         }
 
         // Pass the projek_id to the view
-        return view('perolehan/create', ['projek_id' => $projek_id]);
+        return view('perolehan/create', ['PROJEK_ID' => $PROJEK_ID, 'projek' => $projek]);
     }
 
     public function store(){
@@ -25,237 +40,320 @@ class PerolehanController extends Controller{
         $perolehanM = new PerolehanModel();
         $projekM = new ProjekModel();
 
+        $PROJEK_ID = $this->request->getPost('PROJEK_ID');
+
+        // Validate projek_id
+        if (!$PROJEK_ID || !$projekM->getProjekById($PROJEK_ID)) {
+            return redirect()->back()->with('error', 'Projek Id tidak sah.');
+        }
+
+        // Check if perolehan already exists for this projek
+        $existingPerolehan = $perolehanM->getPerolehanByProjekId($PROJEK_ID);
+        if ($existingPerolehan) {
+            return redirect()->back()->with('error', 'Perolehan sudah ada untuk projek ini.');
+        }
+
         // Set validation rules
         $valid = \Config\Services::validation();
         $valid->setRules([
-            'projek_id' => 'required',
-            'keputusan' => 'required',
-            'jenis_perolehan' => 'required',
-            'jenis_projek' => 'required',
-            'lukisan_tender' => 'required',
-            'lukisan_tender_file' => 'if_exist|uploaded[lukisan_tender_file]|max_size[lukisan_tender_file,2048]|ext_in[lukisan_tender_file,pdf]',
-            'dokumen_meja_tender' => 'uploaded[dokumen_meja_tender] |mime_in[dokumen_meja_tender,application/pdf]|max_size[dokumen_meja_tender,2048]',
-            'ro_pindaan' => 'uploaded[ro_pindaan]|mime_in[ro_pindaan,application/pdf]|max_size[ro_pindaan,2048]',
-            'kertas_kerja' => 'uploaded[kertas_kerja]|mime_in[kertas_kerja,application/pdf]|max_size[kertas_kerja,2048]',
-            'borang_47a_47b' => 'uploaded[borang_47a_47b]|mime_in[borang_47a_47b,application/pdf]|max_size[borang_47a_47b,2048]',
-            'tapak' => 'uploaded[tapak] |mime_in[tapak,application/pdf]|max_size[tapak,2048]',
-            'pelan_projek' => 'uploaded[pelan_projek]|mime_in[pelan_projek,application/pdf]|max_size[pelan_projek,2048]',
-            'kuantiti' => 'uploaded[kuantiti]|mime_in[kuantiti,application/pdf]|max_size[kuantiti,2048]'
+            'PROJEK_ID' => 'required',
+            'KEPUTUSAN' => 'permit_empty',
+            'JENIS_PEROLEHAN' => 'permit_empty',
+            'JENIS_PROJEK' => 'permit_empty',
+            'LUKISAN_TENDER' => 'permit_empty|in_list[1,0]',
+            'LUKISAN_TENDER_FILE' => 'permit_empty|max_size[LUKISAN_TENDER_FILE,5120]|ext_in[LUKISAN_TENDER_FILE,pdf]',
+            'DOKUMEN_MEJA_TENDER' => 'permit_empty|max_size[DOKUMEN_MEJA_TENDER,5120]|ext_in[DOKUMEN_MEJA_TENDER,pdf]',
+            'RO_PINDAAN' => 'permit_empty|max_size[RO_PINDAAN,5120]|ext_in[RO_PINDAAN,pdf]',
+            'KERTAS_KERJA' => 'permit_empty|max_size[KERTAS_KERJA,5120]|ext_in[KERTAS_KERJA,pdf]',
+            'BORANG_47A_47B' => 'permit_empty|max_size[BORANG_47A_47B,5120]|ext_in[BORANG_47A_47B,pdf]',
+            'TAPAK' => 'permit_empty|max_size[TAPAK,5120]|ext_in[TAPAK,pdf]',
+            'PELAN_PROJEK' => 'permit_empty|max_size[PELAN_PROJEK,5120]|ext_in[PELAN_PROJEK,pdf]',
+            'KUANTITI' => 'permit_empty|max_size[KUANTITI,5120]|ext_in[KUANTITI,pdf]'
         ]);
-
-        // Run validation
-        // if ($valid->withRequest($this->request)->run() === false) {
-        //     return redirect()->back()->withInput()->with('errors', $valid->getErrors());
-        // }
 
         // If validation fails, it means it's incomplete and saved as 'draft'
         $isValid = $valid->withRequest($this->request)->run();
+        if (!$isValid) {
+            return redirect()->back()->withInput()->with('error', 'Perolehan saved as draft.');
+        }
 
         // Prepare the main form data
         $options = [
-            'projek_id' => $this->request->getPost('projek_id'),
-            'keputusan' => $this->request->getPost('keputusan'),
-            'jenis_perolehan' => $this->request->getPost('jenis_perolehan'),
-            'jenis_projek' => $this->request->getPost('jenis_projek'),
-            'lukisan_tender' => $this->request->getPost('lukisan_tender')
+            'PROJEK_ID' => $PROJEK_ID,
+            'KEPUTUSAN' => $this->request->getPost('KEPUTUSAN'),
+            'JENIS_PEROLEHAN' => $this->request->getPost('JENIS_PEROLEHAN'),
+            'JENIS_PROJEK' => $this->request->getPost('JENIS_PROJEK'),
+            'LUKISAN_TENDER' => (int)$this->request->getPost('LUKISAN_TENDER')
         ];
 
-        // Set status based on validation
-        $projekStatus = $isValid ? 'completed' : 'draft';
-
-        // Update 'projek' table with the new status
-        $projekData = [
-            'status' => $projekStatus
-        ];
-
-        // Update the projek table where the projek_id matches
-        $projekM->update($this->request->getPost('projek_id'), $projekData);
-
-        $perolehanM->save($options);
-        $perolehan_id = $perolehanM->getInsertID();
-
-        // Create directory for perolehan files based on perolehan_id
-        $uploadPath = "./upload/perolehan/{$perolehan_id}";
-        if (!is_dir($uploadPath)) {
-            mkdir($uploadPath, 0777, true); // Create folder if it doesn't exist
-        }
+        // Files will be stored as BLOB in database
  
-        // Handle whether has or no document
+        // Initialize files array
         $files = [];
 
-        if ($this->request->getPost('lukisan_tender') == 1) { // Yes option
-            $document = $this->request->getFile('lukisan_tender_file');
-            if($document->isValid() && !$document->hasMoved()) {
-                $document->move($uploadPath); // Store the file and get the path
-                $files['lukisan_tender_file'] = $document->getName();
-            }else {
-                return redirect()->back()->withInput()->with('error', 'Please attach a valid document.');
-            }
+        // Handle LUKISAN_TENDER_FILE based on LUKISAN_TENDER selection
+        switch ($this->request->getPost('LUKISAN_TENDER')) {
+            case 1:
+                $lukisanFile = $this->request->getFile('LUKISAN_TENDER_FILE');
+                $files['LUKISAN_TENDER_FILE'] = ($lukisanFile && $lukisanFile->isValid() && !$lukisanFile->hasMoved())
+                    ? file_get_contents($lukisanFile->getTempName())
+                    : null;
+                break;
+            default:
+                $files['LUKISAN_TENDER_FILE'] = null;
+                break;
         }
 
-        //Handle file uploads
-        foreach ($this->request->getFiles() as $key => $file) {
-            if ($file->isValid() && !$file->hasMoved()) {
-                $file->move($uploadPath);
-                $files[$key] = $file->getName();
-            }
+        // Handle other file uploads
+        $fileFields = [
+            'DOKUMEN_MEJA_TENDER',
+            'RO_PINDAAN', 
+            'KERTAS_KERJA',
+            'BORANG_47A_47B',
+            'TAPAK',
+            'PELAN_PROJEK',
+            'KUANTITI'
+        ];
+
+        foreach ($fileFields as $field) {
+            $file = $this->request->getFile($field);
+            $files[$field] = ($file && $file->isValid() && !$file->hasMoved())
+                ? file_get_contents($file->getTempName())
+                : null;
         }
 
-        //Merge the form data with the uploaded file names
+        // Merge the form data with the uploaded file names
         $data = array_merge($options, $files);
 
         // Save the data to the database
-        $perolehanM->save($data);
+        // Remove PEROLEHAN_ID from data - Oracle trigger will handle it automatically
 
-        // Redirect to perolehan list with appropriate message
-        if ($isValid) {
-            return redirect()->to('/perolehan')->with('success', 'Perolehan submitted and project status updated to completed.');
+        if ($perolehanM->insert($data)) {
+            return redirect()->to('/projek/show/' . $PROJEK_ID)->with('success', 'Perolehan berjaya ditambah.');
         } else {
-            return redirect()->to('/perolehan')->with('success', 'Perolehan saved as draft and project status updated to draft.');
+            return redirect()->back()->withInput()->with('error', 'Gagal menambah perolehan.');
         }
     }
 
-    public function show($perolehan_id){
+    public function show($PROJEK_ID, $PEROLEHAN_ID){
         $model = new PerolehanModel();
-        $data['perolehan'] = $model->find($perolehan_id);
+        $projekM = new ProjekModel();
+        
+        $perolehan = $model->find($PEROLEHAN_ID);
+        $projek = $projekM->find($PROJEK_ID);
 
-        if (!$data['perolehan']){
-            // if no project is found, redirect or show an error
-            return redirect()->to('/perolehan');
-        }
-
-        // Directory where the files are stored for this perolehan
-        $directory = WRITEPATH . 'uploads/perolehan/' . $perolehan_id;
-
-        // Check if the directory exists and fetch the files
-        if (is_dir($directory)) {
-            $data['uploadedFiles'] = array_diff(scandir($directory), ['..', '.']);
-        } else {
-            $data['uploadedFiles'] = [];
+        if (!$perolehan || !$projek) {
+            return redirect()->to('/projek')->with('error', 'Perolehan atau projek tidak ditemukan.');
         }
 
         // Map values to more readable version
-        $data['perolehan']['lukisan_tender'] = $this->mapLukisan($data['perolehan']['lukisan_tender']);
-        $data['perolehan']['jenis_perolehan'] = $this->mapJenisPerolehan($data['perolehan']['jenis_perolehan']);
-        $data['perolehan']['jenis_projek'] = $this->mapJenisProjek($data['perolehan']['jenis_projek']);
-        $data['perolehan']['keputusan'] = $this->mapKeputusan($data['perolehan']['keputusan']);
+        $perolehan['LUKISAN_TENDER'] = $this->mapLukisan($perolehan['LUKISAN_TENDER']);
+        $perolehan['JENIS_PEROLEHAN'] = $this->mapJenisPerolehan($perolehan['JENIS_PEROLEHAN']);
+        $perolehan['JENIS_PROJEK'] = $this->mapJenisProjek($perolehan['JENIS_PROJEK']);
+        $perolehan['KEPUTUSAN'] = $this->mapKeputusan($perolehan['KEPUTUSAN']);
+
+        $data = [
+            'perolehan' => $perolehan,
+            'projek' => $projek
+        ];
+
+        // Check which files are uploaded (BLOB data)
+        $data['uploadedFiles'] = [];
+        $fileFieldsInDb = [
+            'LUKISAN_TENDER_FILE',
+            'DOKUMEN_MEJA_TENDER',
+            'RO_PINDAAN',
+            'KERTAS_KERJA',
+            'BORANG_47A_47B',
+            'TAPAK',
+            'PELAN_PROJEK',
+            'KUANTITI'
+        ];
+
+        foreach ($fileFieldsInDb as $field) {
+            if (isset($perolehan[$field]) && !empty($perolehan[$field])) {
+                $data['uploadedFiles'][] = $field;
+            }
+        }
 
         return view('perolehan/show', $data);
     }
 
-    public function edit($perolehan_id) {
+    public function edit($PEROLEHAN_ID) {
         $perolehanM = new PerolehanModel();
-        $data['perolehan'] = $perolehanM->find($perolehan_id);
         $projekM = new ProjekModel();
-        $data['projek'] = $projekM->findAll();
 
-        // Find the associated projek by its id in perolehan
-        if (!empty($data['perolehan'])) {
-            $data['projek'] = $projekM->find($data['perolehan']['projek_id']);
+        // Get the perolehan data
+        $data['perolehan'] = $perolehanM->find($PEROLEHAN_ID);
+
+        // If perolehan not found, redirect with error
+        if (empty($data['perolehan'])) {
+            return redirect()->to('/projek')->with('error', 'Maklumat perolehan tidak dijumpai');
         }
 
-        if (empty($data['perolehan']) || empty($data['projek'])) {
-            // Handle case if no perolehan or projek found
-            return redirect()->to('/perolehan')->with('error', 'Perolehan or Projek not found');
+        // Get the associated project
+        $data['projek'] = $projekM->find($data['perolehan']['PROJEK_ID']);
+
+        // If project not found, redirect with error
+        if (empty($data['projek'])) {
+            return redirect()->to('/projek')->with('error', 'Maklumat projek tidak dijumpai');
         }
 
         return view('perolehan/edit', $data);
     }
 
-    public function update($perolehan_id) {
+    public function update($PEROLEHAN_ID) {
         $perolehanM = new PerolehanModel();
-        $projekM = new ProjekModel();
+        $existingPerolehan = $perolehanM->find($PEROLEHAN_ID);
+
+        if (empty($existingPerolehan)) {
+            return redirect()->to('/projek')->with('error', 'Maklumat perolehan tidak dijumpai');
+        }
+        $PROJEK_ID = $existingPerolehan['PROJEK_ID'];
 
         // Set validation rules
         $valid = \Config\Services::validation();
         $valid->setRules([
-            'projek_id' => 'required',
-            'keputusan' => 'required',
-            'jenis_perolehan' => 'required',
-            'jenis_projek' => 'required',
-            'lukisan_tender' => 'required',
-            'lukisan_tender_file' => 'if_exist|uploaded[lukisan_tender_file]|max_size[lukisan_tender_file,2048]|ext_in[lukisan_tender_file,pdf]',
-            'dokumen_meja_tender' => 'uploaded[dokumen_meja_tender] |mime_in[dokumen_meja_tender,application/pdf]|max_size[dokumen_meja_tender,2048]',
-            'ro_pindaan' => 'uploaded[ro_pindaan]|mime_in[ro_pindaan,application/pdf]|max_size[ro_pindaan,2048]',
-            'kertas_kerja' => 'uploaded[kertas_kerja]|mime_in[kertas_kerja,application/pdf]|max_size[kertas_kerja,2048]',
-            'borang_47a_47b' => 'uploaded[borang_47a_47b]|mime_in[borang_47a_47b,application/pdf]|max_size[borang_47a_47b,2048]',
-            'tapak' => 'uploaded[tapak] |mime_in[tapak,application/pdf]|max_size[tapak,2048]',
-            'pelan_projek' => 'uploaded[pelan_projek]|mime_in[pelan_projek,application/pdf]|max_size[pelan_projek,2048]',
-            'kuantiti' => 'uploaded[kuantiti]|mime_in[kuantiti,application/pdf]|max_size[kuantiti,2048]'
+            'PROJEK_ID' => 'required',
+            'KEPUTUSAN' => 'permit_empty',
+            'JENIS_PEROLEHAN' => 'permit_empty',
+            'JENIS_PROJEK' => 'permit_empty',
+            'LUKISAN_TENDER' => 'permit_empty',
+            'LUKISAN_TENDER_FILE' => 'permit_empty|max_size[LUKISAN_TENDER_FILE,5120]|ext_in[LUKISAN_TENDER_FILE,pdf]',
+            'DOKUMEN_MEJA_TENDER' => 'permit_empty|max_size[DOKUMEN_MEJA_TENDER,5120]|ext_in[DOKUMEN_MEJA_TENDER,pdf]',
+            'RO_PINDAAN' => 'permit_empty|max_size[RO_PINDAAN,5120]|ext_in[RO_PINDAAN,pdf]',
+            'KERTAS_KERJA' => 'permit_empty|max_size[KERTAS_KERJA,5120]|ext_in[KERTAS_KERJA,pdf]',
+            'BORANG_47A_47B' => 'permit_empty|max_size[BORANG_47A_47B,5120]|ext_in[BORANG_47A_47B,pdf]',
+            'TAPAK' => 'permit_empty|max_size[TAPAK,5120]|ext_in[TAPAK,pdf]',
+            'PELAN_PROJEK' => 'permit_empty|max_size[PELAN_PROJEK,5120]|ext_in[PELAN_PROJEK,pdf]',
+            'KUANTITI' => 'permit_empty|max_size[KUANTITI,5120]|ext_in[KUANTITI,pdf]'
         ]);
 
         // Run validation
         $isValid = $valid->withRequest($this->request)->run();
 
-        $perolehan = $perolehanM->find($perolehan_id);
+        $data = [
+            'KEPUTUSAN' => $this->request->getPost('KEPUTUSAN'),
+            'JENIS_PEROLEHAN' => $this->request->getPost('JENIS_PEROLEHAN'),
+            'JENIS_PROJEK' => $this->request->getPost('JENIS_PROJEK'),
+            'LUKISAN_TENDER' => (int)$this->request->getPost('LUKISAN_TENDER')
+        ];
 
-        // Create directory for perolehan files based on perolehan_id
-        $uploadPath = "./upload/perolehan/{$perolehan_id}";
-        if (!is_dir($uploadPath)) {
-            mkdir($uploadPath, 0777, true); // Create folder if it doesn't exist
-        }
+        // Files will be stored as BLOB in database
 
-        // Prepare the main form data
-        $options = [
-            'projek_id' => $perolehan['projek_id'],
-            'keputusan' => $this->request->getPost('keputusan'),
-            'jenis_perolehan' => $this->request->getPost('jenis_perolehan'),
-            'jenis_projek' => $this->request->getPost('jenis_projek'),
-            'lukisan_tender' => $this->request->getPost('lukisan_tender')
+        $files = ['LUKISAN_TENDER_FILE', 'DOKUMEN_MEJA_TENDER',
+        'RO_PINDAAN', 'KERTAS_KERJA', 'BORANG_47A_47B', 'TAPAK', 
+        'PELAN_PROJEK', 'KUANTITI'
         ];
 
         // Set status based on validation
-        $projekStatus = $isValid ? 'completed' : 'draft';
+        // $projekStatus = $isValid ? 'completed' : 'draft';
 
-        $projekData = [
-            'status' => $projekStatus
-        ];
+        // $projekData = [
+        //     'status' => $projekStatus
+        // ];
 
         // Handle whether has or no document
-        $files = [];
 
-        if ($this->request->getPost('lukisan_tender') == 1) { // Yes option
-            $document = $this->request->getFile('lukisan_tender_file');
-            if($document->isValid() && !$document->hasMoved()) {
-                $document->move($uploadPath); // Store the file and get the path
-                $files['lukisan_tender_file'] = $document->getName();
-            }else {
-                return redirect()->back()->withInput()->with('error', 'Please attach a valid document.');
+        foreach ($files as $field) {
+            $file = $this->request->getFile($field);
+            if ($file && $file->isValid() && !$file->hasMoved()) {
+                // Special handling for LUKISAN_TENDER_FILE based on LUKISAN_TENDER value
+                if ($field === 'LUKISAN_TENDER_FILE' && $data['LUKISAN_TENDER'] != 1) {
+                    $data[$field] = null; 
+                    continue;
+                }
+                // Store file content as BLOB
+                $data[$field] = file_get_contents($file->getTempName());
+            } else {
+                // Keep existing file if no new file is uploaded, unless it's LUKISAN_TENDER_FILE and LUKISAN_TENDER is No
+                if ($field === 'LUKISAN_TENDER_FILE' && $data['LUKISAN_TENDER'] != 1) {
+                    $data[$field] = null;
+                } else {
+                    $data[$field] = $existingPerolehan[$field]; // Keep old file if no new one
+                }
             }
         }
-
-        //Handle file uploads
-        foreach ($this->request->getFiles() as $key => $file) {
-            if ($file->isValid() && !$file->hasMoved()) {
-                $file->move($uploadPath);
-                $files[$key] = $file->getName();
-            }
-        }
-
-        //Merge the form data with the uploaded file names
-        $data = array_merge($options, $files);
-
-        // Update the data in the database
-        $perolehanM->update($perolehan_id, $data);
         
-        $projekM->update($this->request->getPost('projek_id'), $projekData);
+        // $projekM->update($this->request->getPost('projek_id'), $projekData);
 
         // Now update the projek table's status based on the perolehan completeness
-        if($this->isComplete($data)) {
-            // Update status to 'completed' in the projek table
-            $projekM->update($perolehan['projek_id'], ['status' => 'completed']);
+        // if($this->isComplete($data)) {
+        //     // Update status to 'completed' in the projek table
+        //     $projekM->update($perolehan['projek_id'], ['status' => 'completed']);
+        // } else {
+        //     $projekM->update($perolehan['projek_id'], ['status' => 'draft']);
+        // }
+
+        if ($perolehanM->update($PEROLEHAN_ID, $data)) {
+            return redirect()->to('/projek/show/' . $PROJEK_ID)->with('success', 'Maklumat Perolehan berjaya dikemaskini.');
         } else {
-            $projekM->update($perolehan['projek_id'], ['status' => 'draft']);
+            return redirect()->back()->withInput()->with('error', 'Gagal mengemaskini maklumat Perolehan.');
         }
     }
 
-    public function delete($perolehan_id) {
+    public function delete($PEROLEHAN_ID) {
         $perolehanM = new PerolehanModel();
-        $perolehanM->delete($perolehan_id);
+        $perolehan = $perolehanM->find($PEROLEHAN_ID);
 
-        return redirect()->to('/perolehan')->with('status', 'Perolehan deleted successfully.');
+        if ($perolehan) {
+            // Optionally delete associated files from server
+            // ... file deletion logic ...
+            return redirect()->to($perolehan ? '/projek/show/' . $perolehan['PROJEK_ID'] : '/projek')->with('success', 'Maklumat Perolehan berjaya dipadam.');
+        } else {
+            return redirect()->to($perolehan ? '/projek/show/' . $perolehan['PROJEK_ID'] : '/projek')->with('error', 'Maklumat Perolehan tidak ditemui.');
+        }
     }
 
+    public function index() {
+        $perolehanM = new PerolehanModel();
+        $projekM = new ProjekModel();
+        
+        // Get all perolehan
+        $perolehan = $perolehanM->findAll();
+
+        foreach ($perolehan as &$p) {
+            // Get project details
+            $projek = $projekM->find($p['PROJEK_ID']);
+            if ($projek) {
+                $p['PROJEK_NAMA'] = $projek['NAMA_PROJEK'];
+            }
+            
+            $p['JENIS_PEROLEHAN'] = $this->mapJenisPerolehan($p['JENIS_PEROLEHAN']);
+            $p['JENIS_PROJEK'] = $this->mapJenisProjek($p['JENIS_PROJEK']);
+            $p['KEPUTUSAN'] = $this->mapKeputusan($p['KEPUTUSAN']);
+        }
+
+        return view('perolehan/index', ['perolehan' => $perolehan]);
+    }
+
+    // Methods to view/download files from BLOB
+    public function viewFile($PEROLEHAN_ID, $fieldName) {
+        $perolehanM = new PerolehanModel();
+        $perolehan = $perolehanM->find($PEROLEHAN_ID);
+        
+        if (!$perolehan || !isset($perolehan[$fieldName]) || empty($perolehan[$fieldName])) {
+            return redirect()->back()->with('error', 'Fail tidak ditemui.');
+        }
+        
+        // Set appropriate content type for PDF
+        return $this->response->setHeader('Content-Type', 'application/pdf')
+                              ->setBody($perolehan[$fieldName]);
+    }
+
+    public function downloadFile($PEROLEHAN_ID, $fieldName) {
+        $perolehanM = new PerolehanModel();
+        $perolehan = $perolehanM->find($PEROLEHAN_ID);
+        
+        if (!$perolehan || !isset($perolehan[$fieldName]) || empty($perolehan[$fieldName])) {
+            return redirect()->back()->with('error', 'Fail tidak ditemui untuk muat turun.');
+        }
+        
+        return $this->response->setHeader('Content-Type', 'application/pdf')
+                              ->setHeader('Content-Disposition', 'attachment; filename="' . $fieldName . '.pdf"')
+                              ->setBody($perolehan[$fieldName]);
+    }
+    
     private function mapLukisan($value) {
         return $value == 1 ? 'Yes' : 'No';
     }
@@ -289,52 +387,45 @@ class PerolehanController extends Controller{
         return $jenisProjekMap[$value] ?? $value;
     }
 
-    public function index() {
+    public function testStore(){
+        // Simple test without file uploads to isolate the session issue
         $perolehanM = new PerolehanModel();
-        $perolehan = $perolehanM->findAll();
+        $projekM = new ProjekModel();
 
-        foreach ($perolehan as &$p) {
-            $p['jenis_perolehan'] = $this->mapJenisPerolehan($p['jenis_perolehan']);
-            $p['jenis_projek'] = $this->mapJenisProjek($p['jenis_projek']);
-            $p['keputusan'] = $this->mapKeputusan($p['keputusan']);
+        $PROJEK_ID = $this->request->getPost('PROJEK_ID');
+
+        // Validate projek_id
+        if (!$PROJEK_ID || !$projekM->getProjekById($PROJEK_ID)) {
+            return redirect()->back()->with('error', 'Projek Id tidak sah.');
         }
 
-        return view('perolehan/index', ['perolehan' => $perolehan]);
-    }
-
-    private function isComplete($data) {
-        return !empty($data['keputusan']) && !empty($data['jenis_perolehan']) && !empty($data['jenis_projek']) && !empty($data['lukisan_tender']);
-    }
-
-    public function viewFile($files) {
-        $filepath = WRITEPATH . 'uploads/perolehan/' . $files;
-
-        // Check if the file exists
-        if (file_exists($filepath)) {
-            // Get the file's mime type and send headers
-            $mimeType = mime_content_type($filepath);
-            header('Content-Type' . $mimeType);
-            header('Content-Disposition: inline; filename="' . basename($filepath) . '"');
-            header('Content-Length: ' . filesize($filepath));
-
-            // Output the file content
-            readfile($filepath);
-            exit;
-        } else {
-            // File does not exist, show error or redirect
-            return redirect()->back()->with('error', 'File not found.');
+        // Check if perolehan already exists for this projek
+        $existingPerolehan = $perolehanM->getPerolehanByProjekId($PROJEK_ID);
+        if ($existingPerolehan) {
+            return redirect()->back()->with('error', 'Perolehan sudah ada untuk projek ini.');
         }
-    }
 
-    public function downloadFile($files) {
-        $filepath = WRITEPATH . 'uploads/perolehan/' . $files;
+        // Prepare the main form data without files
+        $data = [
+            'PROJEK_ID' => $PROJEK_ID,
+            'KEPUTUSAN' => $this->request->getPost('KEPUTUSAN'),
+            'JENIS_PEROLEHAN' => $this->request->getPost('JENIS_PEROLEHAN'),
+            'JENIS_PROJEK' => $this->request->getPost('JENIS_PROJEK'),
+            'LUKISAN_TENDER' => (int)$this->request->getPost('LUKISAN_TENDER'),
+            'LUKISAN_TENDER_FILE' => null,
+            'DOKUMEN_MEJA_TENDER' => null,
+            'RO_PINDAAN' => null,
+            'KERTAS_KERJA' => null,
+            'BORANG_47A_47B' => null,
+            'TAPAK' => null,
+            'PELAN_PROJEK' => null,
+            'KUANTITI' => null
+        ];
 
-        // Check if the file exists
-        if (file_exists($filepath)) {
-            return $this->response->download($filepath, null)->setFileName($files);
+        if ($perolehanM->insert($data)) {
+            return redirect()->to('/projek/show/' . $PROJEK_ID)->with('success', 'Perolehan berjaya ditambah (test).');
         } else {
-            // File does not exist, show error or redirect
-            return redirect()->back()->with('error', 'File not found');
+            return redirect()->back()->withInput()->with('error', 'Gagal menambah perolehan (test).');
         }
     }
 }

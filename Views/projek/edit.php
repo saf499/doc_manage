@@ -39,23 +39,23 @@
               </div>
             </div>
             <div class="card-body">
-            <form method="post" action="<?= site_url('projek/update/' . $projek['projek_id']) ?>">
+            <form method="post" action="<?= site_url('projek/update/' . $PROJEK['PROJEK_ID']) ?>">
               <div class="form-group">
-                <label for="nama_projek">Nama Projek</label>
-                <input type="text" name="nama_projek" 
-                value="<?= set_value('nama_projek'), $projek['nama_projek'] ?>" 
+                <label for="NAMA_PROJEK">Nama Projek</label>
+                <input type="text" name="NAMA_PROJEK" 
+                value="<?= set_value('NAMA_PROJEK'), $PROJEK['NAMA_PROJEK'] ?>" 
                 class="form-control" required>
               </div>
               <div class="form-group">
-                <label for="nama_pemohon">Nama Pemohon</label>
-                <input type="text" name="nama_pemohon" 
-                value="<?= set_value('nama_pemohon'), $projek['nama_pemohon'] ?>"
+                <label for="NAMA_PEMOHON">Nama Pemohon</label>
+                <input type="text" name="NAMA_PEMOHON" 
+                value="<?= set_value('NAMA_PEMOHON'), $PROJEK['NAMA_PEMOHON'] ?>"
                 class="form-control" required>
               </div>
               <div class="form-group">
-                <label for="no_kontrak">No Kontrak</label>
-                <input type="text" name="no_kontrak" 
-                value="<?= set_value('no_kontrak'), $projek['no_kontrak'] ?>"
+                <label for="NO_KONTRAK">No Kontrak</label>
+                <input type="text" name="NO_KONTRAK" 
+                value="<?= set_value('NO_KONTRAK'), $PROJEK['NO_KONTRAK'] ?>"
                 class="form-control">
               </div>
               <div class="form-group">
@@ -63,19 +63,18 @@
                 <input type="number" 
                   step="0.01"
                   min="0.00" 
-                  name="anggaran_kos" 
-                  id="anggaran_kos"
-                  value="<?= set_value('anggaran_kos'), $projek['anggaran_kos'] ?>" 
+                  name="ANGGARAN_KOS" 
+                  id="ANGGARAN_KOS"
+                  value="<?= set_value('ANGGARAN_KOS'), $PROJEK['ANGGARAN_KOS'] ?>" 
                   class="form-control" 
                   placeholder="Enter the cost estimate">
               </div>
               <div class="form-group">
-                <label for="tahun">Tahun</label>
+                <label for="TAHUN">Tahun</label>
                 <input type = "number"
-                  name = "tahun" id = "tahun" 
-                  min = "1900" max = "2999" 
+                  name = "TAHUN" id = "TAHUN"  
                   step = "1" class = "form-control"
-                  value="<?= set_value('tahun'), $projek['tahun'] ?>">
+                  value="<?= set_value('TAHUN'), $PROJEK['TAHUN'] ?>">
               </div>
             </div>
             <!-- /.card-body -->
@@ -95,60 +94,60 @@
             </div>
             <div class="card-body">
             <div class="form-group">
-            <label for="sumber_peruntukan">Sumber Peruntukan: </label>
-            <select name="sumber_peruntukan" class="form-control">
+            <label for="SUMBER_PERUNTUKAN">Sumber Peruntukan: </label>
+            <select name="SUMBER_PERUNTUKAN" class="form-control">
                 <option value="">Select an option</option>
                 <option value="d.e" 
-                    <?= set_select('sumber_peruntukan', 'd.e', ($projek['sumber_peruntukan'] ?? '') === 'd.e'); ?>>
+                    <?= set_select('SUMBER_PERUNTUKAN', 'd.e', ($PROJEK['SUMBER_PERUNTUKAN'] ?? '') === 'd.e'); ?>>
                     D.E
                 </option>
                 <option value="rezab" 
-                    <?= set_select('sumber_peruntukan', 'rezab', ($projek['sumber_peruntukan'] ?? '') === 'rezab'); ?>>
+                    <?= set_select('SUMBER_PERUNTUKAN', 'rezab', ($PROJEK['SUMBER_PERUNTUKAN'] ?? '') === 'rezab'); ?>>
                     Rezab
                 </option>
                 <option value="mengurus" 
-                    <?= set_select('sumber_peruntukan', 'mengurus', ($projek['sumber_peruntukan'] ?? '') === 'mengurus'); ?>>
+                    <?= set_select('SUMBER_PERUNTUKAN', 'mengurus', ($PROJEK['SUMBER_PERUNTUKAN'] ?? '') === 'mengurus'); ?>>
                     Mengurus
                 </option>
                 <option value="lain-lain" 
-                    <?= set_select('sumber_peruntukan', 'lain-lain', ($projek['sumber_peruntukan'] ?? '') === 'lain-lain'); ?>>
+                    <?= set_select('SUMBER_PERUNTUKAN', 'lain-lain', ($PROJEK['SUMBER_PERUNTUKAN'] ?? '') === 'lain-lain'); ?>>
                     Lain-lain
                 </option>
             </select>
             </div>
               <div class="form-group">
-              <label for="jenis_kontrak">Jenis Kontrak: </label>
-                <select name="jenis_kontrak" class="form-control">
+              <label for="JENIS_KONTRAK">Jenis Kontrak: </label>
+                <select name="JENIS_KONTRAK" class="form-control">
                   <option value="">
                     Select an option
                   </option>
                   <option value="perkhidmatan"
-                    <?= set_select('jenis_kontrak', 'perkhidmatan', ($projek['jenis_kontrak'] ?? '') === 'perkhidmatan'); ?>>
+                    <?= set_select('JENIS_KONTRAK', 'perkhidmatan', ($PROJEK['JENIS_KONTRAK'] ?? '') === 'perkhidmatan'); ?>>
                     Perkhidmatan
                   </option>
                   <option value="bekalan"
-                    <?= set_select('jenis_kontrak', 'bekalan', ($projek['jenis_kontrak'] ?? '') === 'bekalan'); ?>>
+                    <?= set_select('JENIS_KONTRAK', 'bekalan', ($PROJEK['JENIS_KONTRAK'] ?? '') === 'bekalan'); ?>>
                     Bekalan
                   </option>
                   <option value="kerja"
-                    <?= set_select('jenis_kontrak', 'kerja', ($projek['jenis_kontrak'] ?? '') === 'kerja'); ?>>
+                    <?= set_select('JENIS_KONTRAK', 'kerja', ($PROJEK['JENIS_KONTRAK'] ?? '') === 'kerja'); ?>>
                     Kerja
                   </option>
                 </select>
               </div>
               <div>
-                <label for="status_projek">Status Projek</label>
-                <select name="status_projek" class="form-control">
+                <label for="STATUS_PROJEK">Status Projek</label>
+                <select name="STATUS_PROJEK" class="form-control">
                     <option value="perancangan"
-                        <?= set_select('status_projek', 'perancangan', ($projek['status_projek'] ?? '') === 'perancangan'); ?>>
+                        <?= set_select('STATUS_PROJEK', 'perancangan', ($PROJEK['STATUS_PROJEK'] ?? '') === 'perancangan'); ?>>
                         Perancangan
                     </option>
                     <option value="aktif"
-                        <?= set_select('status_projek', 'aktif', ($projek['status_projek'] ?? '') === 'aktif'); ?>>
+                        <?= set_select('STATUS_PROJEK', 'aktif', ($PROJEK['STATUS_PROJEK'] ?? '') === 'aktif'); ?>>
                         Aktif
                     </option>
-                    <option value="KIV"
-                        <?= set_select('status_projek', 'KIV', ($projek['status_projek'] ?? '') === 'KIV'); ?>>
+                    <option value="kiv"
+                        <?= set_select('STATUS_PROJEK', 'kiv', ($PROJEK['STATUS_PROJEK'] ?? '') === 'kiv'); ?>>
                         K.I.V
                     </option>
                 </select>
